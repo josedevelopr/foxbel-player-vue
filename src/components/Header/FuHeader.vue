@@ -1,7 +1,11 @@
 <template>
   <div class="FuHeader">
-      <fu-search-bar/>
-      <fu-user-session class="header__user_section"/>
+      <fu-search-bar 
+       class="FuSearchBar"
+       :current_menu_selected="current_menu_selected"
+       @get-search="getSearch"
+       />
+      <fu-user-session class="FuUserSession"/>
   </div> 
 </template>
 
@@ -16,6 +20,21 @@ export default {
         FuSearchBar,
         FuUserSession,
     },
+    props :
+    {
+        current_menu_selected :
+        {
+            type : String,
+            required : true
+        },
+    },
+    methods:
+    {
+        getSearch(search, type)
+        {
+            this.$emit('get-search', search, type);
+        },
+    },
 }
 </script>
 
@@ -26,11 +45,19 @@ export default {
         padding-left: 40px;
         padding-top: 30px;
         display: flex;
+        box-sizing: border-box;
     }
 
-    .header__user_section
+    .FuSearchBar
     {
-        position: absolute;
-        right: 0;        
+        align-self: flex-start;  
+        margin-right: 249px;
+    }
+
+    .FuUserSession
+    {
+        align-self: flex-end;              
+        display:flex;
+        justify-content: flex-end;
     }
 </style>

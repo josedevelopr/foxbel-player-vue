@@ -8,17 +8,27 @@
                 <div class="navbar__item navbar__title">
                     <span>Mi librería</span>
                 </div>
-                <div class="navbar__item item__active">
-                    <a href="#">Recientes</a>
+                <div class="navbar__item">
+                    <a>Recientes</a>
                 </div>
                 <div class="navbar__item">
-                    <a href="#">Artistas</a>
+                    <a 
+                     :class="current_menu_selected === 'artistTracks' ? 'item__active' : ''"
+                     href="#"
+                     @click="handleMenuSelected('artistTracks')"
+                    >Artistas</a>
                 </div>
                 <div class="navbar__item">
-                    <a href="#">Álbums</a>
+                    <a
+                    :class="current_menu_selected === 'albumTracks' ? 'item__active' : ''"
+                     href="#"
+                     @click="handleMenuSelected('albumTracks')"
+                    >Álbums</a>
                 </div>
                 <div class="navbar__item">
-                    <a href="#">Canciones</a>
+                    <a :class="current_menu_selected === 'playListTracks' ? 'item__active' : ''"
+                     href="#"
+                     @click="handleMenuSelected('playListTracks')">Canciones</a>
                 </div>
                 <div class="navbar__item">
                     <a href="#">Estaciones</a>
@@ -54,7 +64,22 @@ export default {
         return{
             logo : logo,
         }
-    }  
+    },
+    props :
+    {
+        current_menu_selected :
+        {
+            type : String,
+            required : true
+        },
+    },
+    methods:
+    {
+        handleMenuSelected(menuSelected)
+        {
+            this.$emit('handle_menu_selected', menuSelected);
+        },
+    },
 }
 </script>
 
@@ -74,7 +99,7 @@ export default {
         justify-content: space-between;
         overflow: hidden;
         background: #662323;
-        color: #cdd7d6;
+        color: #cdd7d6;        
     }
 
     .navbar__top
@@ -132,6 +157,7 @@ export default {
     .item__active
     {
         border-left: 4px solid #E86060;
+        margin-left: -36px;
         padding-left: 36px;        
     }
     .item__active a
@@ -140,14 +166,6 @@ export default {
         font-family: 'Quicksand', sans-serif;
         font-size: 16px;
         font-weight: bold;
-    }
-
-    @media (min-width: 480px) 
-    {
-        .FuNavbar
-        {
-            
-        }
     }
     
 </style>

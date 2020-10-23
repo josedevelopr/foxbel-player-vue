@@ -13,8 +13,8 @@
             <div 
              class="fu-player__previous" 
              v-on:click="handlePreviousTrack"
-             :disabled="podcast_index == 0"
-             :class="{'player__disabled_button': podcast_index == 0}"
+             :disabled="current_clip_index == 0"
+             :class="{'player__disabled_button': current_clip_index == 0}"
             >
                 <i class="fas fa-step-backward"></i>
             </div>
@@ -25,8 +25,8 @@
             <div 
              class="fu-player__next" 
              v-on:click="handleNextTrack"
-             :disabled="podcast_index == playlist_length-1"
-             :class="{'player__disabled_button': podcast_index == playlist_length-1}"
+             :disabled="current_clip_index == playlist_length-1"
+             :class="{'player__disabled_button': current_clip_index == playlist_length-1}"
             >
                 <i class="fas fa-step-forward"></i>
             </div>
@@ -87,7 +87,7 @@ export default {
             type : String,
             required : true
         },
-        podcast_index :
+        current_clip_index :
         {
             type : Number,
             required : true
@@ -187,7 +187,7 @@ export default {
         },
         handleEnded()
         {
-            if(this.podcast_index + 1 == this.playlist_length)
+            if(this.current_clip_index + 1 == this.playlist_length)
             {                
                 this.audio.pause();
                 clearTimeout(this.checkingCurrentPositionInTrack);
@@ -241,7 +241,7 @@ export default {
 {
     display: grid;
     grid-template-columns : 100px repeat(3, 1fr);
-    background-color: #2196F3;
+    background-color: #EB5757;
     width: 100%;
     height: 100px;
 }
@@ -286,7 +286,7 @@ export default {
     justify-self: center;
     color: #fff;
     font-size: 20px;
-    background-color: #6ABDFF;
+    background-color: #FF7676;
     width: 60px;
     height: 60px;
     display: flex;
@@ -342,6 +342,18 @@ export default {
     border-radius: 8px;
     height: 6px;
     cursor: pointer;
+    
+}
+
+.fu-player__range::-webkit-slider-thumb 
+{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: #fff;
+  border-radius: 50px;
+  cursor: pointer;
 }
 
 .fu-player__volumeIcon
@@ -370,7 +382,7 @@ export default {
 .currentProgress
 {    
     height: 100%;
-    background-color: #136bb3;
+    background-color: #EB5757;
     cursor: pointer;
 }
 
@@ -389,7 +401,7 @@ export default {
 {
     visibility: hidden;
     width: 120px;
-    background-color: #136bb3;
+    background-color: #FF7676;
     color: #fff;
     text-align: center;
     border-radius: 6px;

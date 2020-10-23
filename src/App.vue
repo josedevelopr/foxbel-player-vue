@@ -1,7 +1,16 @@
 <template>
   <div id="app">
-    <fu-navbar/>
-    <fu-main/>
+    <fu-navbar
+     :current_menu_selected="menuSelected"
+     @handle_menu_selected="handleMenuSelected"
+    />
+    <fu-main
+     :current_menu_selected="menuSelected"
+     :clips="clips"
+     :current_clip_id="currentPlayList.id"
+     @handle-click-tracks="handleClickTracks"
+     @get-search="getSearch"
+    />
     <!-- <div class="app-podcasts">
       <fu-podcast
         class="app-podcast"
@@ -28,6 +37,21 @@
       @previous-track="handlePreviousTrack"
       />
     </div> -->
+    <div 
+     class="app-player"
+     v-if="currentPlayListClips.length > 0"
+    >
+      <fu-player 
+       :name="getClip.title_short"
+       :url="getClip.preview"
+       :image_url="getCover"
+       :album="getTitle"       
+       :current_clip_index="currentIndexClip"
+       :playlist_length="currentPlayListClips.length"
+       @next-track="handleNextTrack"
+       @previous-track="handlePreviousTrack"
+      />
+    </div>
   </div>  
 </template>
 
@@ -42,28 +66,83 @@ export default {
   name: 'App',
   data(){
     return {     
-      podcasts : [],
-      currentPodcastClips : [],
-      currentPodcast : null,
-      currentIndexPodcast : 0,
+      clips : [],
+      currentPlayList : {id : 0},
+      currentPlayListClips :[],
+      currentIndexClip : 0,
+      menuSelected : 'playListTracks',  
+      cover : ''    
     }
   },
   methods:
   {
-    async handleClickPodcast(podcast)
+    handleMenuSelected(menuSelected)
     {
-      const {id} = podcast;
-      this.currentPodcast = podcast;
-      const {audio_clips} = await this.getAudioClip(id);
-      this.currentPodcastClips = audio_clips;
-      this.currentIndexPodcast = 0;
+      this.clips = [];
+      this.currentPlayList = {id : 0};
+      this.currentPlayListClips = [];
+      this.currentIndexClip = 0;
+      this.menuSelected = menuSelected;
+      this.getInit();
     },
-    getAudioClip(id)
+    async handleClickTracks(item, type)
     {
-      return fetch(`https://api.audioboom.com/channels/${id}/audio_clips`)
-              .then((response) => response.json())
-              .then((data) => data.body);
-      
+      //console.log(item, type);
+      const {id} = item;
+      this.currentPlayList = item;
+      //console.log(this.currentPlayList.title);
+      const result = await this.getClips(id, type);
+     // console.log(result);
+      this.currentPlayListClips = result;
+      this.currentIndexClip = 0;
+
+    },
+    getClips(id, type)
+    {
+      console.log(id, type);
+      let listClips;
+      switch(type)
+      {
+        case "playListTracks":
+           listClips = fetch(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/playlist/${id}`)
+                            .then((response) => response.json())
+                            .then((data) => {
+                              if(data.tracks)
+                              {
+                                 return data.tracks.data;
+                              } else
+                              {
+                                return []
+                              }
+                            });
+          break;
+        case "albumTracks":
+           listClips = fetch(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/album/${id}`)
+                            .then((response) => response.json())                            
+                            .then((data) => {
+                              console.log(data);
+                              if(data.tracks)
+                              {
+                                this.cover = data.cover_medium;
+                                return data.tracks.data;
+                              } else
+                              {
+                                return []
+                              }
+                              
+                            });
+          break;
+        case "artistTracks":
+           listClips = fetch(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/artist/${id}/top?limit=50`)
+                            .then((response) => response.json())
+                            .then((data) => data.data)
+                            // .then((data) => console.log(data));
+          break;
+        default :
+          listClips = null;
+          break;        
+      }
+      return listClips;
     },
     comparePodcastWithCurrent(podcast)
     {
@@ -75,40 +154,108 @@ export default {
     },
     handlePreviousTrack()
     {
-      if(this.currentIndexPodcast > 0)
+      if(this.currentIndexClip > 0)
       {
-        this.currentPodcastClips[this.currentIndexPodcast--];
+        this.currentPlayListClips[this.currentIndexClip--];
       }        
     },
     handleNextTrack()
     {
-      if(this.currentIndexPodcast < this.currentPodcastClips.length)
+      if(this.currentIndexClip < this.currentPlayListClips.length)
       {
-        this.currentPodcastClips[this.currentIndexPodcast++];
+        this.currentPlayListClips[this.currentIndexClip++];
       }
+    },
+    getInit()
+    {
+      switch(this.menuSelected)
+      {
+        case 'artistTracks':
+          fetch('https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart/top?limit=50')
+              .then(response => response.json())      
+              .then((data) => {
+                this.clips = data.artists.data;
+                //console.log("artist",data.artists.data);
+              });
+          break;
+        case 'albumTracks':
+          fetch('https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart/top?limit=50')
+              .then(response => response.json())      
+              .then((data) => {
+                this.clips = data.albums.data;
+                //console.log("album",data.albums.data);
+              });
+          break;
+        default :
+          fetch('https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart/top?limit=50')
+              .then(response => response.json())      
+              .then((clips) => {
+                this.clips = clips.playlists.data;
+                // console.log(clips.playlists.data);
+              });
+          break;
+      }
+    },
+    getSearch(search, type)
+    {
+      switch(type)
+      {
+        case "playListTracks":          
+            fetch(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=track:${search}`)
+                  .then(response => response.json())      
+                  .then((data) => {
+                    this.clips = data.data;
+                    //console.log("Tracks : ", data);
+                  });
+          break;
+        default:
+            fetch(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=album:${search}`)
+                  .then(response => response.json())      
+                  .then((data) => {                    
+                    this.clips = data.data;
+                    //console.log(type,data);
+                  });       
+          break;
+      }      
     },
   },
   computed :
   {
     getClip()
     {
-      return this.currentPodcastClips[this.currentIndexPodcast];
-    }
+      return this.currentPlayListClips[this.currentIndexClip];
+    },
+    getCover()
+    {      
+      if(this.getClip.album)
+      {
+        return this.getClip.album.cover_medium
+      } else if(this.currentPlayList.cover_medium)
+      {
+        return this.currentPlayList.cover_medium;
+      } else
+      {
+        return this.cover;
+      } 
+    },
+    getTitle()
+    {
+      if(this.getClip.album)
+      {
+        return this.getClip.album.title;
+      } else
+      {
+        return this.getClip.title;
+      }  
+    },    
   },
   components: {
-    //FuPlayer,
-    // FuHeader,
-    //FuPodcast,
+    FuPlayer,
     FuNavbar,
     FuMain
   },
   created(){
-    fetch(' https://api.audioboom.com/channels/recommended')
-      .then(response => response.json())
-      .then(data => data.body.filter(d => d.urls.banner_image.original != null))
-      .then((podcasts) => {
-        this.podcasts = podcasts;
-      });
+        this.getInit();
   },  
 }
 
