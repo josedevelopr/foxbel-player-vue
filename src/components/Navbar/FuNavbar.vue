@@ -81,6 +81,8 @@ export default {
         },
     },
 }
+// Developed by : Jose Antonio Alvino Velasque
+// 2020
 </script>
 
 <style>
