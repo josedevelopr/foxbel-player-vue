@@ -50,6 +50,7 @@
        :playlist_length="currentPlayListClips.length"
        @next-track="handleNextTrack"
        @previous-track="handlePreviousTrack"
+       @handle-play="handlePlay"
       />
     </div>
   </div>  
@@ -71,17 +72,21 @@ export default {
       currentPlayListClips :[],
       currentIndexClip : 0,
       menuSelected : 'playListTracks',  
-      cover : ''    
+      cover : '',
+      isPlaying: false,
     }
   },
   methods:
   {
     handleMenuSelected(menuSelected)
     {
-      this.clips = [];
-      this.currentPlayList = {id : 0};
-      this.currentPlayListClips = [];
-      this.currentIndexClip = 0;
+      if(!this.isPlaying)
+      {
+        this.clips = [];
+        this.currentPlayList = {id : 0};
+        //this.currentPlayListClips = [];
+        this.currentIndexClip = 0;
+      }      
       this.menuSelected = menuSelected;
       this.getInit();
     },
@@ -217,6 +222,10 @@ export default {
                   });       
           break;
       }      
+    },
+    handlePlay()
+    {
+      this.isPlaying != this.isPlaying;
     },
   },
   computed :

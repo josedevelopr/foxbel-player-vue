@@ -126,11 +126,13 @@ export default {
                 this.audio.play();
                 this.audio.volume = this.volume/100;
                 this.isPaused = false;
+                this.handlePlay();
                 this.getCurrentTimeEverySecond(true);
             } else
             {
-                this.audio.pause();
+                this.audio.pause();                
                 this.isPaused = true;
+                this.handlePlay();
                 clearTimeout(this.checkingCurrentPositionInTrack);
             }
 
@@ -190,8 +192,9 @@ export default {
             if(this.current_clip_index + 1 == this.playlist_length)
             {                
                 this.audio.pause();
-                clearTimeout(this.checkingCurrentPositionInTrack);
+                clearTimeout(this.checkingCurrentPositionInTrack);                
                 this.isPaused = true;
+                this.handlePlay();
                 this.currentTime = 0;
                 this.currentProgressBar = 0;
                 this.audioDuration = 0;
@@ -200,6 +203,10 @@ export default {
                 this.$emit('next-track');
             }
         },
+        handlePlay()
+        {
+            this.$emit('handle-play');
+        },        
     },    
     watch: 
     {        
@@ -213,6 +220,7 @@ export default {
                 this.currentTime = 0;
                 this.audio.pause();
                 this.isPaused = true;
+                this.handlePlay();
                 this.audio = new Audio(newUrl);                
             }
         },        
